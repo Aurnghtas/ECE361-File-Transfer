@@ -59,12 +59,12 @@ int main(int argc, char *argv[]){
         //the sended message is ftp, reply yes
         //now send yes
         if ((sendto(fd, "yes", strlen("yes"), 0, (struct sockaddr *) &sender, sender_len)) == -1) {
-            printf(stderr, "Fails to send to the client properly.\n");
+            printf("Fails to send to the client properly.\n");
             exit(1);
         }
     } else {
         if ((sendto(fd, "no", strlen("no"), 0, (struct sockaddr *) &sender, sender_len)) == -1) {
-            printf(stderr, "Fails to send to the client properly.\n");
+            printf("Fails to send to the client properly.\n");
             exit(1);
         }
     }
