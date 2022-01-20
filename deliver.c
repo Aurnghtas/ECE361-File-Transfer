@@ -33,6 +33,7 @@ int main(int argc, char *argv[]) {
         }
     } else {
         printf("The only supported command is: ftp\n");
+        exit(1);
     }
 
     /* 
@@ -56,7 +57,7 @@ int main(int argc, char *argv[]) {
 
     int num_bytes_send = sendto(sockfd, "ftp", strlen("ftp"), 0, res->ai_addr, res->ai_addrlen);
     if(num_bytes_send == -1) {
-        printf("Failed to send to the server");
+        printf("Failed to send to the server\n");
         exit(1);
     }
 
@@ -69,14 +70,16 @@ int main(int argc, char *argv[]) {
 
     int num_bytes_recv = recvfrom(sockfd, recv_buff, sizeof(recv_buff), 0, (struct sockaddr*)&src_addr, &src_addrlen);
     if(num_bytes_recv == -1) {
-        printf("Failed to receive from the server");
+        printf("Failed to receive from the server\n");
         exit(1);
     }
 
     recv_buff[num_bytes_recv] = '\0'; // add the string terminator to the buffer
 
+    printf("%s", recv_buff);
+
     if(strcmp(recv_buff, "yes") == 0 ) {
-        printf("A file transfer can start");
+        printf("A file transfer can start\n");
     }
     return 0;
 

@@ -53,6 +53,8 @@ int main(int argc, char *argv[]){
         printf("Fails to recieve from the client properly.\n");
         exit(1);
     }
+
+    printf("%s", buffer);
     
     //finally, respond accordingly to client
     if (strcmp(buffer, "ftp") == 0) {
