@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
     }
 
     /* 
-     * Receive message from thee server
+     * Receive message from the server
      */
     char recv_buff[100];
     struct sockaddr_storage src_addr;
@@ -78,5 +78,6 @@ int main(int argc, char *argv[]) {
     if(strcmp(recv_buff, "yes") == 0 ) {
         printf("A file transfer can start");
     }
+    return 0;
 
 }
