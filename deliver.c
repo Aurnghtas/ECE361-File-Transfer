@@ -15,7 +15,7 @@
 
 int main(int argc, char *argv[]) {
     if (argc != 3) {
-        fprintf(stderr, "usage: deliver <server address> <server port number>\n");
+        printf("usage: deliver <server address> <server port number>\n");
         exit(1);
     }
 
@@ -24,11 +24,15 @@ int main(int argc, char *argv[]) {
     scanf("%s", command);
     scanf("%s", file_name);
 
-    if(access(file_name, F_OK) == 0){
-        printf("The File Exists\n");
+    if(strcmp("ftp", command) == 0) {
+        if(access(file_name, F_OK) == 0){
+            printf("The File Exists\n");
+        } else {
+            printf("The File does NOT Exist\n");
+            exit(1);
+        }
     } else {
-        printf("The File does NOT Exist\n");
-        exit(1);
+        printf("The only supported command is: ftp\n");
     }
 
     /* 
@@ -45,7 +49,7 @@ int main(int argc, char *argv[]) {
      * return human readable string for error reporting */
     if((rv = getaddrinfo(argv[1], argv[2], &hints, &res)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-        return 1;
+        exit(1);
     }
 
     sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
@@ -62,6 +66,7 @@ int main(int argc, char *argv[]) {
     char recv_buff[100];
     struct sockaddr_storage src_addr;
     socklen_t src_addrlen = sizeof(struct sockaddr_storage);
+
     int num_bytes_recv = recvfrom(sockfd, recv_buff, sizeof(recv_buff), 0, (struct sockaddr*)&src_addr, src_addrlen);
     if(num_bytes_recv == -1) {
         print("Failed to receive from the server");
@@ -73,32 +78,5 @@ int main(int argc, char *argv[]) {
     if(strcmp(recv_buff, "yes") == 0 ) {
         printf("A file transfer can start");
     }
-
-    // int sockfd, rv;
-    // struct addrinfo hints, *res, *p;
-
-    // memset(&hints, 0, sizeof hints);    // using memset to initialize struct
-    // hints.ai_family = AF_INET;  // IPv4 internet protocols
-    // hints.ai_socktype = SOCK_DGRAM;     // socket is UDP
-    
-    // /* get IP address, return 0 if it succeeds
-    //  * return human readable string for error reporting */
-    // if((rv = getaddrinfo(argv[1], argv[2], &hints, &res)) != 0) {
-    //     fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-    //     return 1;
-    // }
-
-    // /* find the first available socket */
-    // for(p=res; p!=NULL; p=p->ai_next) {
-    //     if((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
-    //         perror("client: socket");
-    //         continue;
-    //     }
-    //     break;
-    // }
-
-    // if(p==NULL) {
-    //     fprintf(stderr, "client: failed to find available socket");
-    // }
 
 }
