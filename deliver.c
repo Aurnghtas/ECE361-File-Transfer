@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 
     int num_bytes_send = sendto(sockfd, "ftp", strlen("ftp"), 0, res->ai_addr, res->ai_addrlen);
     if(num_bytes_send == -1) {
-        print("Failed to send to the server");
+        printf("Failed to send to the server");
         exit(1);
     }
 
@@ -67,9 +67,9 @@ int main(int argc, char *argv[]) {
     struct sockaddr_storage src_addr;
     socklen_t src_addrlen = sizeof(struct sockaddr_storage);
 
-    int num_bytes_recv = recvfrom(sockfd, recv_buff, sizeof(recv_buff), 0, (struct sockaddr*)&src_addr, src_addrlen);
+    int num_bytes_recv = recvfrom(sockfd, recv_buff, sizeof(recv_buff), 0, (struct sockaddr*)&src_addr, &src_addrlen);
     if(num_bytes_recv == -1) {
-        print("Failed to receive from the server");
+        printf("Failed to receive from the server");
         exit(1);
     }
 
