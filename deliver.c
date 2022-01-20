@@ -50,7 +50,29 @@ int main(int argc, char *argv[]) {
 
     sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 
-    int num_bytes = sendto(sockfd, "ftp", strlen("ftp"), 0, res->ai_addr, res->ai_addrlen);
+    int num_bytes_send = sendto(sockfd, "ftp", strlen("ftp"), 0, res->ai_addr, res->ai_addrlen);
+    if(num_bytes_send == -1) {
+        print("Failed to send to the server");
+        exit(1);
+    }
+
+    /* 
+     * Receive message from thee server
+     */
+    char recv_buff[100];
+    struct sockaddr_storage src_addr;
+    socklen_t src_addrlen = sizeof(struct sockaddr_storage);
+    int num_bytes_recv = recvfrom(sockfd, recv_buff, sizeof(recv_buff), 0, (struct sockaddr*)&src_addr, src_addrlen);
+    if(num_bytes_recv == -1) {
+        print("Failed to receive from the server");
+        exit(1);
+    }
+
+    recv_buff[num_bytes_recv] = '\0'; // add the string terminator to the buffer
+
+    if(strcmp(recv_buff, "yes") == 0 ) {
+        printf("A file transfer can start");
+    }
 
     // int sockfd, rv;
     // struct addrinfo hints, *res, *p;
