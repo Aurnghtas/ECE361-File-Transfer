@@ -14,7 +14,7 @@
 int main(int argc, char *argv[]){
     //called in the format server <UDP listen port>
     if (argc != 2) {
-        fprintf(stderr, "usage: server <UDP listen port>\n");
+        printf("usage: server <UDP listen port>\n");
         exit(1);
     }
 
@@ -30,7 +30,7 @@ int main(int argc, char *argv[]){
     //need to first create the receiver sockaddr struct
     struct sockaddr_in server; //on stack
     bzero(&server, sizeof(server)); //initialize struct
-    server.sin_family = AF_INET;
+    server.sin_family = AF_INET;    // IPv4 internet protocols
     server.sin_addr.s_addr = htonl(INADDR_ANY); //bind socket to all local interfaces(so can receive from any IP)
     int portNum = atoi(argv[1]); //get port num in int
     server.sin_port = htons(portNum); //bind to this port num
@@ -47,14 +47,12 @@ int main(int argc, char *argv[]){
     //need to create the sender sockaddr struct
     struct sockaddr_in sender;
     int sender_len = sizeof(struct sockaddr_in); //the pointer to size of sender's address
-    bzero(buffer, sizeof(buffer)); //clear the revieve buffer
+    bzero(buffer, sizeof(buffer)); //clear the receiver buffer
     if(recvfrom(fd, buffer, sizeof(buffer), 0, (struct sockaddr*)&sender, &sender_len) <= 0){
         //fail to receive properly
         printf("Fails to recieve from the client properly.\n");
         exit(1);
     }
-
-    printf("%s", buffer);
     
     //finally, respond accordingly to client
     if (strcmp(buffer, "ftp") == 0) {

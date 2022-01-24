@@ -76,8 +76,6 @@ int main(int argc, char *argv[]) {
 
     recv_buff[num_bytes_recv] = '\0'; // add the string terminator to the buffer
 
-    printf("%s", recv_buff);
-
     if(strcmp(recv_buff, "yes") == 0 ) {
         printf("A file transfer can start\n");
     }
