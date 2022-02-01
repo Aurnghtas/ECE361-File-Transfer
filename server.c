@@ -39,7 +39,7 @@ int packet_from_message(char* message){
         recieved.total_frag = Total_frag;
 
         //create file stream, open a file
-        fd = fopen(filename, "w+"); //recieved file needs to have same name as sent one
+        fd = fopen(filename, "wb"); //recieved file needs to have same name as sent one
         if(fd == NULL){
             printf("Cannot create file\n"); 
             return -1; // -1 for error
