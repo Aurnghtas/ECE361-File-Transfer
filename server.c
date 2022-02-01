@@ -10,8 +10,58 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include "packet.h"
+#include <stdbool.h>
+
+FILE* fd = NULL;
+//This is the helper function that parse the recieved message into packet,
+//it will create a new file if the message is the first one and close file after the last message
+int packet_from_message(char* message){
+    //first use strtok function to break up the message header
+    //referred to this tutorial https://www.cplusplus.com/reference/cstring/strtok/
+    const char breaker[2] = ":";
+    char* total_frag = strtok(message, breaker);
+    char* frag_no = strtok(NULL, breaker); //use null to continue scanning
+    char* size = strtok(NULL, breaker);
+    char* filename = strtok(NULL, breaker);
+
+    //now turn strings to int values
+    unsigned int Total_frag = atoi(total_frag);
+    unsigned int Frag_no = atoi(frag_no);
+    unsigned int dSize = atoi(size);
+    
+    if(Frag_no == 1){
+        //this is the first message revieved, need to create a Packet struct and file stream
+        Packet recieved;
+        recieved.filename = filename;
+        recieved.frag_no = Frag_no;
+        recieved.size = dSize;
+        recieved.total_frag = Total_frag;
+
+        //create file stream, open a file
+        fd = fopen(filename, "w+"); //recieved file needs to have same name as sent one
+        if(fd == NULL){
+            printf("Cannot create file\n"); 
+            return -1; // -1 for error
+        }
+    }
+
+    //now, write data into the created file use fwrite to write to stream
+    int header_size = strlen(total_frag) + strlen(frag_no) + strlen(size) + strlen(filename);
+    //fwrite, notice need to skip the header
+    fwrite(message + header_size + sizeof(char) * 4, sizeof(char), dSize, fd);
+
+    //now check if the last message is done transmitting
+    if(Frag_no == Total_frag){
+        fclose(fd);
+        return 1; // 1 for end of this file transmission
+    }
+
+    return 0; // 0 for success and continue this file transmission
+}
 
 int main(int argc, char *argv[]){
+//lab1******************************************************************************
     //called in the format server <UDP listen port>
     if (argc != 2) {
         printf("usage: server <UDP listen port>\n");
@@ -64,6 +114,32 @@ int main(int argc, char *argv[]){
         }
     } else {
         if ((sendto(fd, "no", strlen("no"), 0, (struct sockaddr *) &sender, sender_len)) == -1) {
+            printf("Fails to send to the client properly.\n");
+            exit(1);
+        }
+    }
+
+//lab2******************************************************************************
+    //recieve the messages one by one
+    char data_buffer[1100]; //the receive buffer for data transmission
+    bzero(data_buffer, sizeof(data_buffer)); 
+    while(true){ 
+        //while true so that the server keeps running and wait for new messages even when a full file is transmitted
+        if(recvfrom(fd, data_buffer, sizeof(data_buffer), 0, (struct sockaddr*)&sender, &sender_len) <= 0){
+            //fail to receive properly
+            printf("Fails to recieve from the client properly.\n");
+            exit(1);
+        }
+        //transfer message recieved into packet
+        int status = packet_from_message(data_buffer);
+
+        //implement acknowledgement******************************************************************************
+        // (send to client: -1 for error and retry, 0 for continue sending, 
+        // 1 for end of this file transmission and can start sending other files)
+        //*******************************************************************************************************
+        char Status[2];
+        sprintf(Status, "%d\n", status);
+        if ((sendto(fd, Status, strlen(Status), 0, (struct sockaddr *) &sender, sender_len)) == -1) {
             printf("Fails to send to the client properly.\n");
             exit(1);
         }
