@@ -13,7 +13,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/time.h>
-#include "packet.h"
+#include "../packet.h"
 
 void constructPacketsArray(Packet* array, int total_packets, char* data, char* fileName, int remaining_file);
 void message_from_packet(Packet packet, char* message);
@@ -152,6 +152,7 @@ int main(int argc, char *argv[]) {
         int acknowledgement = atoi(acknowledgement_str);
         if(acknowledgement == -1) {
             printf("Error in sending to the server, please retry!\n");
+            exit(1);
         } else if(acknowledgement == 0) {
             printf("Succeed in sending to the server, please continue!\n");
         } else if(acknowledgement == 1) {

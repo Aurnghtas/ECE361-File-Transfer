@@ -10,13 +10,14 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include "packet.h"
+#include "../packet.h"
 #include <stdbool.h>
 
 FILE* fd = NULL;
 //This is the helper function that parse the recieved message into packet,
 //it will create a new file if the message is the first one and close file after the last message
 int packet_from_message(char* message){
+    printf("now we are in server.c packet from message\n");
     //first use strtok function to break up the message header
     //referred to this tutorial https://www.cplusplus.com/reference/cstring/strtok/
     const char breaker[2] = ":";
@@ -118,12 +119,14 @@ int main(int argc, char *argv[]){
             exit(1);
         }
     }
-
+    
+    printf("now we are in server.c outside the while loop\n");
 //lab2******************************************************************************
     //recieve the messages one by one
     char data_buffer[1100]; //the receive buffer for data transmission
     bzero(data_buffer, sizeof(data_buffer)); 
     while(true){ 
+        printf("now we are in server.c inside the while loop\n");
         //while true so that the server keeps running and wait for new messages even when a full file is transmitted
         if(recvfrom(fd, data_buffer, sizeof(data_buffer), 0, (struct sockaddr*)&sender, &sender_len) <= 0){
             //fail to receive properly
