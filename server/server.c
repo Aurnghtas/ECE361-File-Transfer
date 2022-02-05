@@ -64,7 +64,7 @@ int packet_from_message(char* message){
 int main(int argc, char *argv[]){
 //lab1******************************************************************************
     //called in the format server <UDP listen port>
-    if (argc != 2) {
+    if(argc != 2){
         printf("usage: server <UDP listen port>\n");
         exit(1);
     }
@@ -93,59 +93,67 @@ int main(int argc, char *argv[]){
         exit(1);
     }
 
-    //now binding successful, receive from deliver
-    char buffer[100]; //the receive buffer
-    //need to create the sender sockaddr struct
-    struct sockaddr_in sender;
-    int sender_len = sizeof(struct sockaddr_in); //the pointer to size of sender's address
-    bzero(buffer, sizeof(buffer)); //clear the receiver buffer
-    if(recvfrom(fd, buffer, sizeof(buffer), 0, (struct sockaddr*)&sender, &sender_len) <= 0){
-        //fail to receive properly
-        printf("Fails to recieve from the client properly.\n");
-        exit(1);
-    }
-    
-    //finally, respond accordingly to client
-    if (strcmp(buffer, "ftp") == 0) {
-        //the sended message is ftp, reply yes
-        //now send yes
-        if ((sendto(fd, "yes", strlen("yes"), 0, (struct sockaddr *) &sender, sender_len)) == -1) {
-            printf("Fails to send to the client properly.\n");
-            exit(1);
-        }
-    } else {
-        if ((sendto(fd, "no", strlen("no"), 0, (struct sockaddr *) &sender, sender_len)) == -1) {
-            printf("Fails to send to the client properly.\n");
-            exit(1);
-        }
-    }
-    
-    printf("now we are in server.c outside the while loop\n");
-//lab2******************************************************************************
-    //recieve the messages one by one
-    char data_buffer[1100]; //the receive buffer for data transmission
-    bzero(data_buffer, sizeof(data_buffer)); 
-    while(true){ 
-        printf("now we are in server.c inside the while loop\n");
-        //while true so that the server keeps running and wait for new messages even when a full file is transmitted
-        if(recvfrom(fd, data_buffer, sizeof(data_buffer), 0, (struct sockaddr*)&sender, &sender_len) <= 0){
+    //while(true){
+        //now binding successful, receive from deliver
+        char buffer[100]; //the receive buffer
+        //need to create the sender sockaddr struct
+        struct sockaddr_in sender;
+        int sender_len = sizeof(struct sockaddr_in); //the pointer to size of sender's address
+        bzero(buffer, sizeof(buffer)); //clear the receiver buffer
+        if(recvfrom(fd, buffer, sizeof(buffer), 0, (struct sockaddr*)&sender, &sender_len) <= 0){
             //fail to receive properly
             printf("Fails to recieve from the client properly.\n");
             exit(1);
         }
-        //transfer message recieved into packet
-        int status = packet_from_message(data_buffer);
-
-        //implement acknowledgement******************************************************************************
-        // (send to client: -1 for error and retry, 0 for continue sending, 
-        // 1 for end of this file transmission and can start sending other files)
-        //*******************************************************************************************************
-        char Status[2];
-        sprintf(Status, "%d\n", status);
-        if ((sendto(fd, Status, strlen(Status), 0, (struct sockaddr *) &sender, sender_len)) == -1) {
-            printf("Fails to send to the client properly.\n");
-            exit(1);
+        
+        //finally, respond accordingly to client
+        if (strcmp(buffer, "ftp") == 0) {
+            //the sended message is ftp, reply yes
+            //now send yes
+            if ((sendto(fd, "yes", strlen("yes"), 0, (struct sockaddr *) &sender, sender_len)) == -1) {
+                printf("Fails to send to the client properly.\n");
+                exit(1);
+            }
+        } else {
+            if ((sendto(fd, "no", strlen("no"), 0, (struct sockaddr *) &sender, sender_len)) == -1) {
+                printf("Fails to send to the client properly.\n");
+                exit(1);
+            }
         }
-    }
+        
+        printf("now we are in server.c outside the while loop\n");
+    //lab2******************************************************************************
+        //recieve the messages one by one
+        char data_buffer[1100]; //the receive buffer for data transmission
+        bzero(data_buffer, sizeof(data_buffer)); 
 
+        while(true){ 
+            printf("now we are in server.c inside the while loop\n");
+            //while true so that the server keeps running and wait for new messages even when a full file is transmitted
+            if(recvfrom(fd, data_buffer, sizeof(data_buffer), 0, (struct sockaddr*)&sender, &sender_len) <= 0){
+                //fail to receive properly
+                printf("Fails to recieve from the client properly.\n");
+                exit(1);
+            }
+            //transfer message recieved into packet
+            int status = packet_from_message(data_buffer);
+
+            //implement acknowledgement******************************************************************************
+            // (send to client: -1 for error and retry, 0 for continue sending, 
+            // 1 for end of this file transmission and can start sending other files)
+            //*******************************************************************************************************
+            char Status[2];
+            printf("%d", status);
+            sprintf(Status, "%d\n", status);
+            if ((sendto(fd, Status, strlen(Status), 0, (struct sockaddr *) &sender, sender_len)) == -1) {
+                printf("Fails to send to the client properly 2.\n");
+                exit(1);
+            }
+
+            if(status == 1){
+                break;
+            }
+        }
+        return 0;
+    //}
 }
