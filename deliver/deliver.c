@@ -158,14 +158,16 @@ int main(int argc, char *argv[]) {
 
         int acknowledgement = atoi(acknowledgement_str);
         if(acknowledgement == -1) {
-            printf("Error in sending to the server, please retry!\n");
-            exit(1);
+            printf("Error in sending to the server, will resend package %d again.\n", index);
+            index--;
         } else if(acknowledgement == 0) {
-            printf("Succeed in sending to the server, please continue!\n");
+            printf("Succeed in sending to the server, prepare to send next packet.\n");
         } else if(acknowledgement == 1) {
-            printf("This file has been successfully transmitted! You can now send other files!\n");
+            printf("This file has been successfully transmitted!\n");
         }
     }
+
+    return 0;
 }
 
 void constructPacketsArray(Packet* array, int total_packets, char* data, char* fileName, int remaining_file) {
