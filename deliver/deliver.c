@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
     gettimeofday(&end, NULL);
 
     double elapsedTime = (end.tv_usec - start.tv_usec)/1000.0;  // us to ms for RTT
-    printf("The RTT is %lf ms", elapsedTime);
+    printf("The RTT is %lf ms\n", elapsedTime);
 
     recv_buff[num_bytes_recv] = '\0'; // add the string terminator to the buffer
 
@@ -95,6 +95,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+    printf("Now we are going to fragment a file if needed\n");
     /*****************************
      * Fragment a file if needed *
      *****************************/
@@ -114,6 +115,7 @@ int main(int argc, char *argv[]) {
         num_packets += 1;
     }
 
+    printf("Now we are going to construct struct packet array\n");
     /*********************************
      * Construct struct packet array *
      *********************************/
@@ -122,8 +124,10 @@ int main(int argc, char *argv[]) {
     fclose(fp);
 
     Packet* packet_array = (Packet*)malloc(sizeof(Packet) * num_packets);
+    printf("Now we are going to fill in elements of the packet_array\n");
     constructPacketsArray(packet_array, num_packets, data_buffer, file_name, remaining_bits);
 
+    printf("Now we are going to construct packets(messages) from struct packet array\n");
     /********************************************************
      * Construct packets(messages) from struct packet array *
      ********************************************************/    
@@ -132,8 +136,10 @@ int main(int argc, char *argv[]) {
         int message_len = numOfDigits(packet_array[index].total_frag) + numOfDigits(packet_array[index].frag_no) + 
                         numOfDigits(packet_array[index].size) + strlen(packet_array[index].filename) + packet_array[index].size + 4;
         char* message = (char*)malloc(sizeof(char) * message_len);
+        printf("now we are going to fill the messages\n");
         message_from_packet(packet_array[index], message);
 
+        printf("now we are ready to send the files to the server\n");
         /* ready to send the packet(message) */
         num_bytes_send = sendto(sockfd, message, message_len, 0, res->ai_addr, res->ai_addrlen);
         if(num_bytes_send == -1) {
@@ -141,6 +147,7 @@ int main(int argc, char *argv[]) {
             exit(1);
         }
 
+        printf("Now we are going to check the acknowledge\n");
         /* check acknowledgement */
         char acknowledgement_str[10];
         num_bytes_recv = recvfrom(sockfd, acknowledgement_str, sizeof(acknowledgement_str), 0, (struct sockaddr*)&src_addr, &src_addrlen);
@@ -166,7 +173,8 @@ void constructPacketsArray(Packet* array, int total_packets, char* data, char* f
         array[index].total_frag = total_packets;
         array[index].frag_no = index+1;
 
-        if(index=total_packets-1 && remaining_file>0) {
+        printf("now we are in the first if\n");
+        if(index==total_packets-1 && remaining_file!=0) {
             array[index].size = remaining_file;
         } else {
             array[index].size = max_package_size;
@@ -174,11 +182,14 @@ void constructPacketsArray(Packet* array, int total_packets, char* data, char* f
 
         array[index].filename = fileName;
 
-        if(index=total_packets-1 && remaining_file>0) {
+        printf("now we are in the second if\n");
+        if(index==total_packets-1 && remaining_file!=0) {
+            printf("now we are in the second if and first for\n");
             for(int i=0; i<remaining_file; i++) {
                 array[index].filedata[i] = data[i+index*max_package_size];
             }
         } else {
+            printf("now we are in the second if and second for\n");
             for(int i=0; i<max_package_size; i++) {
                 array[index].filedata[i] = data[i+index*max_package_size];
             }
