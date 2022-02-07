@@ -95,12 +95,13 @@ int main(int argc, char *argv[]){
         printf("Fails to bind to this port number, try again with a different one.\n");
         exit(1);
     }
-
+    
+    //while(1){
     //now binding successful, receive from deliver
     char buffer[100]; //the receive buffer
     //need to create the sender sockaddr struct
     struct sockaddr_in sender;
-    int sender_len = sizeof(struct sockaddr_in); //the pointer to size of sender's address
+    socklen_t sender_len = sizeof(sender); //the pointer to size of sender's address
     bzero(buffer, sizeof(buffer)); //clear the receiver buffer
     if(recvfrom(fd, buffer, sizeof(buffer), 0, (struct sockaddr*)&sender, &sender_len) <= 0){
         //fail to receive properly
@@ -152,10 +153,13 @@ int main(int argc, char *argv[]){
             printf("Fails to send to the client properly 2.\n");
             exit(1);
         }
+        //sendto(fd, Status, strlen(Status), 0, (struct sockaddr *) &sender, sender_len);
 
         if(status == 1){
+            printf("File transfer successful!\n");
             break;
         }
     }
+    //}
     return 0;
 }
