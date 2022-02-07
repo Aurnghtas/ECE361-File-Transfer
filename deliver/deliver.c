@@ -152,14 +152,25 @@ int main(int argc, char *argv[]) {
 
         int acknowledgement = atoi(acknowledgement_str);
         if(acknowledgement == -1) {
-            printf("Error in sending to the server, will resend packet %d again.\n", index);
+            printf("Error in sending to the server, will resend packet %d again.\n", index+1);
             index--;
         } else if(acknowledgement == 0) {
-            printf("Succeed in sending packet %d to the server, prepare to send next packet.\n", index);
+            printf("Succeed in sending packet %d to the server, prepare to send next packet.\n", index+1);
         } else if(acknowledgement == 1) {
             printf("This file has been successfully transmitted!\n");
         }
+
+        free(message);
+        message = NULL;
     }
+
+    /***************
+     * free memory *
+     ***************/
+    free(data_buffer);
+    data_buffer = NULL;
+    free(packet_array);
+    packet_array = NULL;
 
     return 0;
 }
