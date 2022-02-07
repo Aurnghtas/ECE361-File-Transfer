@@ -17,7 +17,6 @@ FILE* fd = NULL;
 //This is the helper function that parse the recieved message into packet,
 //it will create a new file if the message is the first one and close file after the last message
 int packet_from_message(char* message, int prev_index){
-    printf("now we are in server.c packet from message\n");
     //first use strtok function to break up the message header
     //referred to this tutorial https://www.cplusplus.com/reference/cstring/strtok/
     const char breaker[2] = ":";
@@ -124,7 +123,6 @@ int main(int argc, char *argv[]){
         }
     }
     
-    printf("now we are in server.c outside the while loop\n");
 //lab2******************************************************************************
     //recieve the messages one by one
     char data_buffer[1100]; //the receive buffer for data transmission
@@ -132,7 +130,6 @@ int main(int argc, char *argv[]){
 
     int prev_index = 0;
     while(true){ 
-        printf("now we are in server.c inside the while loop\n");
         //while true so that the server keeps running and wait for new messages even when a full file is transmitted
         if(recvfrom(fd, data_buffer, sizeof(data_buffer), 0, (struct sockaddr*)&sender, &sender_len) <= 0){
             //fail to receive properly
@@ -142,12 +139,14 @@ int main(int argc, char *argv[]){
         //transfer message recieved into packet
         int status = packet_from_message(data_buffer, prev_index);
         prev_index++;
+        if(status == -1){
+            prev_index--;
+        }
         //implement acknowledgement******************************************************************************
         // (send to client: -1 for error and retry, 0 for continue sending, 
         // 1 for end of this file transmission and can start sending other files)
         //*******************************************************************************************************
         char Status[2];
-        printf("%d\n", status);
         sprintf(Status, "%d\n", status);
         if ((sendto(fd, Status, strlen(Status), 0, (struct sockaddr *) &sender, sender_len)) == -1) {
             printf("Fails to send to the client properly 2.\n");
