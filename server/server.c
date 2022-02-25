@@ -12,6 +12,7 @@
 #include <arpa/inet.h>
 #include "../packet.h"
 #include <stdbool.h>
+#include <time.h>
 
 FILE* fd = NULL;
 //This is the helper function that parse the recieved message into packet,
@@ -110,15 +111,15 @@ int main(int argc, char *argv[]){
     }
     
     //finally, respond accordingly to client
-    if (strcmp(buffer, "ftp") == 0) {
+    if(strcmp(buffer, "ftp") == 0){
         //the sended message is ftp, reply yes
         //now send yes
-        if ((sendto(fd, "yes", strlen("yes"), 0, (struct sockaddr *) &sender, sender_len)) == -1) {
+        if((sendto(fd, "yes", strlen("yes"), 0, (struct sockaddr *) &sender, sender_len)) == -1){
             printf("Fails to send to the client properly.\n");
             exit(1);
         }
-    } else {
-        if ((sendto(fd, "no", strlen("no"), 0, (struct sockaddr *) &sender, sender_len)) == -1) {
+    }else{
+        if((sendto(fd, "no", strlen("no"), 0, (struct sockaddr *) &sender, sender_len)) == -1){
             printf("Fails to send to the client properly.\n");
             exit(1);
         }
@@ -137,27 +138,36 @@ int main(int argc, char *argv[]){
             printf("Fails to recieve from the client properly.\n");
             exit(1);
         }
+
+        //******************implement random dropping************************************************************
+        srand(time(NULL)); //seed
+        double randomNum = (double)rand() / (double)RAND_MAX;
+        //10 percent dropping
+        if(randomNum > 0.1){
         //transfer message recieved into packet
         int status = packet_from_message(data_buffer, prev_index);
-        prev_index++;
-        if(status == -1){
-            prev_index--;
-        }
-        //implement acknowledgement******************************************************************************
-        // (send to client: -1 for error and retry, 0 for continue sending, 
-        // 1 for end of this file transmission and can start sending other files)
-        //*******************************************************************************************************
-        char Status[2];
-        sprintf(Status, "%d\n", status);
-        if ((sendto(fd, Status, strlen(Status), 0, (struct sockaddr *) &sender, sender_len)) == -1) {
-            printf("Fails to send to the client properly 2.\n");
-            exit(1);
-        }
-        //sendto(fd, Status, strlen(Status), 0, (struct sockaddr *) &sender, sender_len);
+            prev_index++;
+            if(status == -1){
+                prev_index--;
+            }
+            //implement acknowledgement******************************************************************************
+            // (send to client: -1 for error and retry, 0 for continue sending, 
+            // 1 for end of this file transmission and can start sending other files)
+            //*******************************************************************************************************
+            char Status[2];
+            sprintf(Status, "%d\n", status);
+            if((sendto(fd, Status, strlen(Status), 0, (struct sockaddr *) &sender, sender_len)) == -1){
+                printf("Fails to send to the client properly 2.\n");
+                exit(1);
+            }
 
-        if(status == 1){
-            printf("File transfer successful!\n");
-            break;
+            if(status == 1){
+                printf("File transfer successful!\n");
+                break;
+            }
+        }else{
+            //if dropped, print out
+            printf("Packet dropped.\n");
         }
     }
     //}
