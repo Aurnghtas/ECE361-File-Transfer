@@ -131,6 +131,7 @@ int main(int argc, char *argv[]){
     bzero(data_buffer, sizeof(data_buffer)); 
 
     int prev_index = 0;
+    srand(time(NULL)); //seed
     while(true){ 
         //while true so that the server keeps running and wait for new messages even when a full file is transmitted
         if(recvfrom(fd, data_buffer, sizeof(data_buffer), 0, (struct sockaddr*)&sender, &sender_len) <= 0){
@@ -140,10 +141,9 @@ int main(int argc, char *argv[]){
         }
 
         //******************implement random dropping************************************************************
-        srand(time(NULL)); //seed
         double randomNum = (double)rand() / (double)RAND_MAX;
-        //10 percent dropping
-        if(randomNum > 0.1){
+        //1 percent dropping
+        if(randomNum > 0.01){
         //transfer message recieved into packet
         int status = packet_from_message(data_buffer, prev_index);
             prev_index++;

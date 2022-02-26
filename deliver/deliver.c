@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
     gettimeofday(&end, NULL);
 
     double elapsedTime = (end.tv_usec - start.tv_usec)/1000.0;  // us to ms for RTT
-    printf("The RTT is %lf ms\n", elapsedTime);
+    //printf("The RTT is %lf ms\n", elapsedTime);
 
     recv_buff[num_bytes_recv] = '\0'; // add the string terminator to the buffer
 
@@ -126,7 +126,15 @@ int main(int argc, char *argv[]) {
 
     /********************************************************
      * Construct packets(messages) from struct packet array *
-     ********************************************************/    
+     ********************************************************/
+    struct timeval timer;
+    timer.tv_sec = 0;
+    timer.tv_usec = elapsedTime * 1000 * 100;    // 100 * RTT time
+    int timer_error = setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timer, sizeof(timer));   // set a timer for the UDP socket
+    if(timer_error == -1) {
+        printf("Failed to set the timer\n");
+    }
+
     for(int index=0; index<num_packets; index++) {
         int message_len = numOfDigits(packet_array[index].total_frag) + numOfDigits(packet_array[index].frag_no) + 
                         numOfDigits(packet_array[index].size) + strlen(packet_array[index].filename) + packet_array[index].size + 4;
@@ -142,20 +150,38 @@ int main(int argc, char *argv[]) {
             exit(1);
         }
 
-        /* check acknowledgement */
-        char acknowledgement_str[10];
-        num_bytes_recv = recvfrom(sockfd, acknowledgement_str, sizeof(acknowledgement_str), 0, (struct sockaddr*)&src_addr, &src_addrlen);
-        if(num_bytes_recv == -1) {
-            printf("Failed to receive acknowledgement from the server\n");
-            exit(1);
-        }
+        /* check if the packet is lost */
+        int num_resends = 0;
+        char acknowledgement_str[100];
 
+        // while no ACK is coming from the server
+        while(recvfrom(sockfd, acknowledgement_str, sizeof(acknowledgement_str), 0, (struct sockaddr*)&src_addr, &src_addrlen) < 0) {
+            num_resends++;
+            printf("Time Out! Trying to resend packet %d!\n", index+1);
+            
+            // resend this packet
+            num_bytes_send = sendto(sockfd, message, message_len, 0, res->ai_addr, res->ai_addrlen);
+            if(num_bytes_send == -1) {
+                printf("Failed to send the file to the server\n");
+                exit(1);
+            }
+
+            // resend too many times, lost connection might occured
+            if(num_resends > 10) {
+                printf("Lost connection between the client and the server! Program exits!\n");
+                exit(1);
+            }
+
+        }
+        
+        /* check the acknowledgement */
         int acknowledgement = atoi(acknowledgement_str);
+
         if(acknowledgement == -1) {
-            printf("Error in sending to the server, will resend packet %d again.\n", index+1);
+            printf("Error in the packet, will resend packet %d again.\n", index+1);
             index--;
         } else if(acknowledgement == 0) {
-            printf("Succeed in sending packet %d to the server, prepare to send next packet.\n", index+1);
+            //printf("Succeed in sending packet %d to the server, prepare to send next packet.\n", index+1);
         } else if(acknowledgement == 1) {
             printf("This file has been successfully transmitted!\n");
         }
