@@ -164,6 +164,7 @@ int main(int argc, char *argv[]){
 
             if(status == 1){
                 printf("File transfer successful!\n");
+                fclose(fd);
                 break;
             }
         }else{
