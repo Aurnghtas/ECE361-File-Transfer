@@ -14,7 +14,7 @@
 #include <stdbool.h>
 #include <time.h>
 
-FILE* fd = NULL;
+FILE* FD = NULL;
 //This is the helper function that parse the recieved message into packet,
 //it will create a new file if the message is the first one and close file after the last message
 int packet_from_message(char* message, int prev_index){
@@ -44,8 +44,8 @@ int packet_from_message(char* message, int prev_index){
         recieved.total_frag = Total_frag;
 
         //create file stream, open a file
-        fd = fopen(filename, "wb"); //recieved file needs to have same name as sent one
-        if(fd == NULL){
+        FD = fopen(filename, "wb"); //recieved file needs to have same name as sent one
+        if(FD == NULL){
             printf("Cannot create file\n"); 
             return -1; // -1 for error
         }
@@ -54,7 +54,7 @@ int packet_from_message(char* message, int prev_index){
     //now, write data into the created file use fwrite to write to stream
     int header_size = strlen(total_frag) + strlen(frag_no) + strlen(size) + strlen(filename);
     //fwrite, notice need to skip the header
-    fwrite(message + header_size + sizeof(char) * 4, sizeof(char), dSize, fd);
+    fwrite(message + header_size + sizeof(char) * 4, sizeof(char), dSize, FD);
 
     //now check if the last message is done transmitting
     if(Frag_no == Total_frag){
@@ -97,7 +97,7 @@ int main(int argc, char *argv[]){
         exit(1);
     }
     
-    //while(1){
+    //\\while(1){
     //now binding successful, receive from deliver
     char buffer[100]; //the receive buffer
     //need to create the sender sockaddr struct
@@ -164,7 +164,7 @@ int main(int argc, char *argv[]){
 
             if(status == 1){
                 printf("File transfer successful!\n");
-                fclose(fd);
+                fclose(FD);
                 break;
             }
         }else{
