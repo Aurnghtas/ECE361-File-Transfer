@@ -129,7 +129,7 @@ int main(int argc, char *argv[]) {
      ********************************************************/
     struct timeval timer;
     timer.tv_sec = 0;
-    timer.tv_usec = elapsedTime * 1000 * 100;    // 100 * RTT time
+    timer.tv_usec = elapsedTime * 1000 * 5;    // 100 * RTT time
     int timer_error = setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timer, sizeof(timer));   // set a timer for the UDP socket
     if(timer_error == -1) {
         printf("Failed to set the timer\n");

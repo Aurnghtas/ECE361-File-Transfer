@@ -58,7 +58,7 @@ int packet_from_message(char* message, int prev_index){
 
     //now check if the last message is done transmitting
     if(Frag_no == Total_frag){
-        fclose(fd);
+        //fclose(fd);
         return 1; // 1 for end of this file transmission
     }
 
@@ -132,6 +132,7 @@ int main(int argc, char *argv[]){
 
     int prev_index = 0;
     srand(time(NULL)); //seed
+
     while(true){ 
         //while true so that the server keeps running and wait for new messages even when a full file is transmitted
         if(recvfrom(fd, data_buffer, sizeof(data_buffer), 0, (struct sockaddr*)&sender, &sender_len) <= 0){
