@@ -31,9 +31,9 @@ int packet_from_message(char* message, int prev_index){
     unsigned int Frag_no = atoi(frag_no);
     unsigned int dSize = atoi(size);
 
-    if(Frag_no != (prev_index) + 1){
+    /*if(Frag_no != (prev_index) + 1){
         return -1;
-    }
+    }*/
 
     if(Frag_no == 1){
         //this is the first message revieved, need to create a Packet struct and file stream
